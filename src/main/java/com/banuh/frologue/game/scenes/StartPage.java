@@ -189,23 +189,23 @@ public class StartPage extends Application {
         numberField.setPrefHeight(35); // 높이 설정
         numberField.setStyle(
                 "-fx-background-color: #80c571; " +  // 배경색 연회색
-                        "-fx-border-color: #171818; " +      // 테두리 색상 회색
-                        "-fx-border-radius: 5; " +           // 테두리 둥글게
-                        "-fx-background-radius: 8; " +       // 배경 둥글게
-                        "-fx-padding: 5; " +                 // 내부 여백
-                        "-fx-font-size: 25px; " +            // 글자 크기
-                        "-fx-text-fill: #333333; " +         // 텍스트 색상 진회색
-                        "-fx-font-family: 'Courier New';"  +  // 글꼴 스타일
-                        "-fx-border-width: 4"
+                "-fx-border-color: #171818; " +      // 테두리 색상 회색
+                "-fx-border-radius: 5; " +           // 테두리 둥글게
+                "-fx-background-radius: 8; " +       // 배경 둥글게
+                "-fx-padding: 5; " +                 // 내부 여백
+                "-fx-font-size: 25px; " +            // 글자 크기
+                "-fx-text-fill: #333333; " +         // 텍스트 색상 진회색
+                "-fx-font-family: 'Courier New';"  +  // 글꼴 스타일
+                "-fx-border-width: 4"
         );
 
 // 숫자만 입력되도록 필터 추가
         numberField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) { // 정규식: 숫자만 허용
-                numberField.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-            if (numberField.getText().length() > 4) { // 최대 4자리 제한
-                numberField.setText(numberField.getText().substring(0, 4));
+//            if (!newValue.matches("\\d*")) { // 정규식: 숫자만 허용
+//                numberField.setText(newValue.replaceAll("[^\\d]", ""));
+//            }
+            if (numberField.getText().length() > 6) { // 최대 4자리 제한
+                numberField.setText(numberField.getText().substring(0, 6));
             }
         });
         layout.getChildren().add(numberField);

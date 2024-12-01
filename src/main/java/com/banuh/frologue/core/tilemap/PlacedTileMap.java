@@ -68,21 +68,17 @@ public class PlacedTileMap {
                         if (overlapWidth < overlapHeight) {
                             if (target.getX() < tilePos.getX()) {
                                 overLap.isRight = true;
-//                                overLap.rightTilePos = tilePos.add(0, tileSize * 0.5);
                                 overLap.rightTilePos = tilePos;
                             } else {
                                 overLap.isLeft = true;
-//                                overLap.leftTilePos = tilePos.add(tileSize, tileSize * 0.5);
                                 overLap.leftTilePos = tilePos;
                             }
                         } else {
                             if (target.getY() < tilePos.getY()) {
                                 overLap.isBottom = true;
-//                                overLap.bottomTilePos = tilePos.add(tileSize * 0.5, 0);
                                 overLap.bottomTilePos = tilePos;
                             } else {
                                 overLap.isTop = true;
-//                                overLap.topTilePos = tilePos.add(tileSize * 0.5, tileSize);
                                 overLap.topTilePos = tilePos;
                             }
                         }

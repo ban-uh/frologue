@@ -1,6 +1,7 @@
 package com.banuh.frologue.game.scenes;
 
 import com.banuh.frologue.core.Game;
+import com.banuh.frologue.core.entity.Entity;
 import com.banuh.frologue.core.scene.GameScene;
 import com.banuh.frologue.core.tilemap.OverLap;
 import com.banuh.frologue.core.tilemap.TileMap;
@@ -12,6 +13,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
@@ -36,7 +38,7 @@ public class PlayScene extends GameScene {
 //        System.out.println();
 
         frog.setVelocityX("wall", 0);
-        OverLap overLap = isCollision(frog.getNextPos(), frog.getWidth(), frog.getHeight());
+        OverLap overLap = isCollision(frog.getNextPos(), frog.getWidth(), frog.getHeight(), new ArrayList<Entity>(playerList.values()));
         game.camera.pos.setY(frog.pos.getY() - game.height/2f - 25);
 //        game.camera.pos.set(0, 0);
 
@@ -215,7 +217,7 @@ public class PlayScene extends GameScene {
         }, game.FRAME());
         game.backgroundColor = Color.web("#6bc6ff");
 
-        frog = (Frog)game.addEntity(new WitchFrog(150, 50, game));
+        frog = (Frog)game.addEntity(new NormalFrog(150, 50, game));
         frog.pid = UUID.randomUUID().toString();
         game.addEntity(new EnergyDrink(200, 40, game));
 
@@ -231,10 +233,10 @@ public class PlayScene extends GameScene {
         int bottomY = firstMap.getHeight();
 
         for (int i = 0; i < 5; i++) {
-            int level = random.nextInt(1) + 3;
+            int level = random.nextInt(4) + 1;
             TileMap map = game.tileMapList.get("level-" + level);
             game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
-            bottomY += map.getHeight() + level * 25;
+            bottomY += map.getHeight() + level * 15;
         }
 
         addEventHandler(KeyEvent.KEY_PRESSED, event -> {

@@ -9,7 +9,7 @@ public class FrologueGame extends Game {
         super(canvas, width, height);
     }
 
-    public int levelCount = 3;
+    public int levelCount = 4;
 
     @Override
     public void preload() {

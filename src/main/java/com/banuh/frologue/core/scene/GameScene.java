@@ -11,6 +11,7 @@ import javafx.event.EventHandler;
 import javafx.event.EventType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameScene {
     private Runnable startCallback = () -> {};
@@ -95,11 +96,52 @@ public class GameScene {
         defaultEnd();
     }
 
-    public OverLap isCollision(Vector2D pos, double width, double height) {
+    public OverLap isCollision(Vector2D pos, double width, double height, List<Entity> entities) {
+        OverLap overLap = new OverLap(false);
+
         for (PlacedTileMap map: placedTilemapList) {
             OverLap collision = map.isCollision("solider", pos, width, height);
-            if (collision.is) return collision;
+            if (collision.is) {
+                overLap.apply(collision);
+            }
         }
-        return new OverLap(false);
+
+        for (Entity entity: entities) {
+            double overlapX1 = Math.max(pos.getX(), entity.pos.getX());
+            double overlapY1 = Math.max(pos.getY(), entity.pos.getY());
+            double overlapX2 = Math.min(pos.getX() + width, entity.pos.getX() + entity.getWidth());
+            double overlapY2 = Math.min(pos.getY() + height, entity.pos.getY() + entity.getHeight());
+
+            // 겹친 영역의 폭과 높이 계산
+            double overlapWidth = overlapX2 - overlapX1;
+            double overlapHeight = overlapY2 - overlapY1;
+
+            // 충돌 여부 확인
+            if (overlapWidth <= 0 || overlapHeight <= 0) {
+                continue;
+            }
+
+            // 충돌 방향 결정
+            if (overlapWidth < overlapHeight) {
+                // 가로 축에서 겹침: 좌우 충돌
+                if (pos.getX() < entity.pos.getX()) {
+                    overLap.isRight = true;
+                    overLap.rightTilePos = entity.pos;
+                } else {
+                    overLap.isLeft = true;
+                    overLap.leftTilePos = entity.pos;
+                }
+            } else {
+                // 세로 축에서 겹침: 상하 충돌
+                if (pos.getY() < entity.pos.getY()) {
+                    overLap.isBottom = true;
+                    overLap.bottomTilePos = entity.pos;
+                } else {
+                    overLap.isTop = true;
+                    overLap.topTilePos = entity.pos;
+                }
+            }
+        }
+        return overLap;
     }
 }
