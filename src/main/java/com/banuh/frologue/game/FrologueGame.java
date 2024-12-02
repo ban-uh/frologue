@@ -9,7 +9,7 @@ public class FrologueGame extends Game {
         super(canvas, width, height);
     }
 
-    public int levelCount = 3;
+    public int levelCount = 4;
 
     @Override
     public void preload() {
@@ -39,6 +39,7 @@ public class FrologueGame extends Game {
         addSprite("frog-man-charged", "img/frog-man/charge.png", 1, 2, 8);
 
         addSprite("item-energy_drink", "img/items/energy-drink.png");
+        addSprite("item-gold_worm", "img/items/goldworm.png");
 
         addTileMap("first_map", "map/bottom");
         addTileMap("test", "tilemap/sample_map");

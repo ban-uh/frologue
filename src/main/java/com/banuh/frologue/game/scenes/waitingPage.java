@@ -1,15 +1,22 @@
 package com.banuh.frologue.game.scenes;
 
+import com.banuh.frologue.App;
+import com.banuh.frologue.game.GlobalVariables;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import javax.swing.*;
+import java.io.IOException;
+
 public class waitingPage extends Application {
+    Stage primaryStage;
 
     public static void main(String[] args) {
         launch(args);
@@ -17,6 +24,13 @@ public class waitingPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        if (!GlobalVariables.isHost) {
+            new Thread(() ->
+                GlobalVariables.server.pongStart(this)
+            ).start();
+        }
+
+        this.primaryStage = primaryStage;
         // 창 크기
         int width = 900;
         int height = 600;
@@ -41,6 +55,14 @@ public class waitingPage extends Application {
         double startButtonY = 400; // 하단 여백
         gc.drawImage(startButtonImage, startButtonX, startButtonY, startButtonWidth, startButtonHeight);
 
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            if (GlobalVariables.isHost) {
+                startGame();
+            } else {
+                JOptionPane.showMessageDialog(null, "호스트만 게임을 진행할 수 있습니다.");
+            }
+        });
+
         // Character Select 버튼 이미지
         Image characterSelectImage = new Image("file:src/main/resources/img/ui/charecter-select-button.png");
         double characterSelectWidth = 170;
@@ -64,7 +86,7 @@ public class waitingPage extends Application {
         Scene scene = new Scene(layout, width, height);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Waiting Page");
+        primaryStage.setTitle("Waiting Page (Code: " + GlobalVariables.server.roomCode + ")");
         primaryStage.show();
     }
 
@@ -92,6 +114,15 @@ public class waitingPage extends Application {
         // SelectEx 이미지 그리기
         Image selectExImage = new Image("file:src/main/resources/img/ui/charecter-select.png");
         modalGc.drawImage(selectExImage, 0, 0, modalWidth, modalHeight);
+
+        String[] frogTypes = {
+                "normal",
+                "ninja",
+                "ox",
+                "space",
+                "umbrella",
+                "witch"
+        };
 
         // 개구리 이미지 위치와 크기 정의
         double[][] frogData = {
@@ -140,12 +171,16 @@ public class waitingPage extends Application {
             frogBlock.setOnMouseExited(event -> frogBlock.setCursor(javafx.scene.Cursor.DEFAULT));
 
             // 클릭 이벤트 처리
+            int finalI = i;
+
             frogBlock.setOnMouseClicked(event -> {
                 double scaleFactor = 0.9;
                 selectedBlock.setLayoutX(x + (width * (1 - scaleFactor)) / 2); // 중앙 정렬
                 selectedBlock.setLayoutY(y + (height * (1 - scaleFactor)) / 2); // 중앙 정렬
                 selectedBlock.setPrefSize(width * scaleFactor, height * scaleFactor); // 크기 축소
                 selectedBlock.setVisible(true); // 블록 보이기
+
+                GlobalVariables.frogType = frogTypes[finalI];
             });
         }
 
@@ -178,5 +213,20 @@ public class waitingPage extends Application {
         modalStage.showAndWait();
     }
 
+    public void startGame() {
+        primaryStage.close();
 
+        if (GlobalVariables.isHost) {
+            GlobalVariables.server.pingStart();
+        }
+
+        App app = new App();
+        Stage gameStage = new Stage();
+
+        try {
+            app.start(gameStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

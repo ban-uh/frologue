@@ -167,7 +167,11 @@ public class Entity {
     }
 
     public boolean getFlag(String name) {
-        return flagList.get(name);
+        if (flagList.containsKey(name)) {
+            return false;
+        } else {
+            return flagList.get(name);
+        }
     }
 
     public void setFlag(String name, boolean flag) {
@@ -176,6 +180,13 @@ public class Entity {
 
     public void setFlag(String name) {
         flagList.put(name, true);
+    }
+
+    public boolean isCollision(Entity target) {
+        return Vector2D.isCollision(
+            pos.getX(), pos.getY(), pos.getX() + getWidth(), pos.getY() + getHeight(),
+            target.pos.getX(), target.pos.getY(), target.pos.getX() + target.getWidth(), target.pos.getY() + target.getHeight()
+        );
     }
 
     static class StatePair {

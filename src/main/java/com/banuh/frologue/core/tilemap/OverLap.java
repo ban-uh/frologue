@@ -24,4 +24,17 @@ public class OverLap {
     public OverLap(boolean is) {
         this.is = is;
     }
+
+    public void apply(OverLap overLap) {
+        is = overLap.is || is;
+        isRight = overLap.isRight || isRight;
+        isLeft = overLap.isLeft || isLeft;
+        isTop = overLap.isTop || isTop;
+        isBottom = overLap.isBottom || isBottom;
+
+        topTilePos = topTilePos == null ? overLap.topTilePos : topTilePos;
+        bottomTilePos = bottomTilePos == null ? overLap.bottomTilePos : bottomTilePos;
+        leftTilePos = leftTilePos == null ? overLap.leftTilePos : leftTilePos;
+        rightTilePos = rightTilePos == null ? overLap.rightTilePos : rightTilePos;
+    }
 }

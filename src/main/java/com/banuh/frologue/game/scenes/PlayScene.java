@@ -1,25 +1,30 @@
 package com.banuh.frologue.game.scenes;
 
 import com.banuh.frologue.core.Game;
+import com.banuh.frologue.core.entity.Entity;
 import com.banuh.frologue.core.scene.GameScene;
 import com.banuh.frologue.core.tilemap.OverLap;
 import com.banuh.frologue.core.tilemap.TileMap;
+import com.banuh.frologue.core.utils.Vector2D;
+import com.banuh.frologue.game.GlobalVariables;
 import com.banuh.frologue.game.frog.*;
 import com.banuh.frologue.game.item.EnergyDrink;
-import com.banuh.frologue.server.PlayerData;
+import com.banuh.frologue.game.item.GoldWorm;
+import com.banuh.frologue.game.item.Item;
 import com.banuh.frologue.server.RoomServer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class PlayScene extends GameScene {
     public double GRAVITY = 9.8;
     public final int TILE_SIZE = 16;
     public Frog frog;
+
+    public ArrayList<Item> droppedItems = new ArrayList<>();
 
     OverLap overLap;
     public HashMap<String, Frog> playerList = new HashMap<>();
@@ -30,13 +35,23 @@ public class PlayScene extends GameScene {
 
     @Override
     public void update() {
+        Iterator<Item> iterator = droppedItems.iterator();
+        while (iterator.hasNext()) {
+            Item item = iterator.next();
+            if (frog.isCollision(item)) {
+                item.use(frog);
+                entityList.remove(item);
+                iterator.remove();
+            }
+        }
+
 //        System.out.println("JUMP: " + frog.getState("jump"));
 //        System.out.println("MOVE: " + frog.getState("move"));
 //        System.out.println("FALL: " + frog.getState("fall"));
 //        System.out.println();
 
         frog.setVelocityX("wall", 0);
-        OverLap overLap = isCollision(frog.getNextPos(), frog.getWidth(), frog.getHeight());
+        OverLap overLap = isCollision(frog.getNextPos(), frog.getWidth(), frog.getHeight(), new ArrayList<Entity>(playerList.values()));
         game.camera.pos.setY(frog.pos.getY() - game.height/2f - 25);
 //        game.camera.pos.set(0, 0);
 
@@ -140,7 +155,11 @@ public class PlayScene extends GameScene {
 
         if (game.isPressed.spaceKey) {
             if (frog.jump_scale < 3) {
-                frog.jump_scale += 1.5f / game.getFps();
+                double val = 1.5f;
+//                if (frog.getFlag("energy_drink")) {
+//                    val = 15f;
+//                }
+                frog.jump_scale += val / game.getFps();
             } else {
                 frog.jump_scale = 3;
             }
@@ -164,24 +183,26 @@ public class PlayScene extends GameScene {
 
     @Override
     public void render() {
+        if (GlobalVariables.server.socket.isClosed()) {
+            System.out.println("Socket is closed!");
+        }
 
-
-        if (overLap.isTop) {
-            game.gc.setFill(new Color(1f, 0f, 0f, 0.5f));
-            game.gc.fillRect((overLap.topTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.topTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isRight) {
-            game.gc.setFill(new Color(0f, 1f, 0f, 0.5f));
-            game.gc.fillRect((overLap.rightTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.rightTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isBottom) {
-            game.gc.setFill(new Color(0f, 0f, 1f, 0.5f));
-            game.gc.fillRect((overLap.bottomTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.bottomTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isLeft) {
-            game.gc.setFill(new Color(0f, 0f, 0f, 0.5f));
-            game.gc.fillRect((overLap.leftTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.leftTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
+//        if (overLap.isTop) {
+//            game.gc.setFill(new Color(1f, 0f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.topTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.topTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isRight) {
+//            game.gc.setFill(new Color(0f, 1f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.rightTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.rightTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isBottom) {
+//            game.gc.setFill(new Color(0f, 0f, 1f, 0.5f));
+//            game.gc.fillRect((overLap.bottomTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.bottomTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isLeft) {
+//            game.gc.setFill(new Color(0f, 0f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.leftTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.leftTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
 
 //        if (tilepos != null) {
 //            // show hitboxes
@@ -204,37 +225,46 @@ public class PlayScene extends GameScene {
 
     @Override
     public void start() {
+        RoomServer server = GlobalVariables.server;
 //        game.showHitbox = true;
-        RoomServer server = new RoomServer();
         server.game = game;
-        server.connect();
 
-        new Thread(() -> server.receiveUpdates(playerList)).start();
+        // 총 5개의 랜덤 맵을 가져옴
+        Random random = new Random();
+        int[] levels = new int[5];
+
+        if (GlobalVariables.isHost) {
+            for (int i = 0; i < 5; i++) {
+                levels[i] = random.nextInt(4) + 1;
+            }
+            drawMap(levels);
+            server.sendMapInfo(levels);
+        }
+
+        new Thread(() -> server.receiveUpdates(this)).start();
+
         game.setInterval(() -> {
             server.sendPlayerPosition(frog);
         }, game.FRAME());
         game.backgroundColor = Color.web("#6bc6ff");
 
-        frog = (Frog)game.addEntity(new WitchFrog(150, 50, game));
-        frog.pid = UUID.randomUUID().toString();
-        game.addEntity(new EnergyDrink(200, 40, game));
+        switch (GlobalVariables.frogType) {
+            case "normal": frog = new NormalFrog(150, 50, game); break;
+            case "ninja": frog = new NinjaFrog(150, 50, game); break;
+            case "ox": frog = new OxFrog(150, 50, game); break;
+            case "space": frog = new SpaceFrog(150, 50, game); break;
+            case "umbrella": frog = new UmbrellaFrog(150, 50, game); break;
+            case "witch": frog = new WitchFrog(150, 50, game); break;
+        }
 
-        TileMap firstMap = game.tileMapList.get("first_map");
-        game.placeTileMapByBottom("first_map", (game.width - firstMap.getWidth()) / 2f, 200);
+        game.addEntity(frog);
+
+        frog.pid = UUID.randomUUID().toString();
+//        game.addEntity(new EnergyDrink(200, 40, game));
+        dropItem(new EnergyDrink(200, 50, game));
 
         if (frog instanceof SpaceFrog) {
             GRAVITY = 1.63;
-        }
-
-        // 총 5개의 랜덤 맵을 가져옴
-        Random random = new Random();
-        int bottomY = firstMap.getHeight();
-
-        for (int i = 0; i < 5; i++) {
-            int level = random.nextInt(1) + 3;
-            TileMap map = game.tileMapList.get("level-" + level);
-            game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
-            bottomY += map.getHeight() + level * 25;
         }
 
         addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -272,5 +302,26 @@ public class PlayScene extends GameScene {
                 game.playSound("jump");
             }
         });
+    }
+
+    public void drawMap(int[] levels) {
+        TileMap firstMap = game.tileMapList.get("first_map");
+        game.placeTileMapByBottom("first_map", (game.width - firstMap.getWidth()) / 2f, 200);
+
+        int bottomY = firstMap.getHeight();
+
+        for (int level: levels) {
+            TileMap map = game.tileMapList.get("level-" + level);
+            game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
+            bottomY += map.getHeight() + level * 15;
+        }
+
+        Item item = new GoldWorm((game.width - 16) / 2f, - bottomY + 170, game);
+        dropItem(item);
+    }
+
+    public void dropItem(Item item) {
+        droppedItems.add(item);
+        game.addEntity(item);
     }
 }
