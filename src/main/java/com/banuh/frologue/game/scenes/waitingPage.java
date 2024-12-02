@@ -1,15 +1,22 @@
 package com.banuh.frologue.game.scenes;
 
+import com.banuh.frologue.App;
+import com.banuh.frologue.game.GlobalVariables;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import javax.swing.*;
+import java.io.IOException;
+
 public class waitingPage extends Application {
+    Stage primaryStage;
 
     public static void main(String[] args) {
         launch(args);
@@ -17,6 +24,13 @@ public class waitingPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        if (!GlobalVariables.isHost) {
+            new Thread(() ->
+                GlobalVariables.server.pongStart(this)
+            ).start();
+        }
+
+        this.primaryStage = primaryStage;
         // 창 크기
         int width = 900;
         int height = 600;
@@ -40,6 +54,14 @@ public class waitingPage extends Application {
         double startButtonX = (width - startButtonWidth) / 2; // 정중앙
         double startButtonY = 400; // 하단 여백
         gc.drawImage(startButtonImage, startButtonX, startButtonY, startButtonWidth, startButtonHeight);
+
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            if (GlobalVariables.isHost) {
+                startGame();
+            } else {
+                JOptionPane.showMessageDialog(null, "호스트만 게임을 진행할 수 있습니다.");
+            }
+        });
 
         // Character Select 버튼 이미지
         Image characterSelectImage = new Image("file:src/main/resources/img/ui/charecter-select-button.png");
@@ -178,5 +200,20 @@ public class waitingPage extends Application {
         modalStage.showAndWait();
     }
 
+    public void startGame() {
+        primaryStage.close();
 
+        if (GlobalVariables.isHost) {
+            GlobalVariables.server.pingStart();
+        }
+
+        App app = new App();
+        Stage gameStage = new Stage();
+
+        try {
+            app.start(gameStage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

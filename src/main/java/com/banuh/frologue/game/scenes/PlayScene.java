@@ -5,6 +5,7 @@ import com.banuh.frologue.core.entity.Entity;
 import com.banuh.frologue.core.scene.GameScene;
 import com.banuh.frologue.core.tilemap.OverLap;
 import com.banuh.frologue.core.tilemap.TileMap;
+import com.banuh.frologue.game.GlobalVariables;
 import com.banuh.frologue.game.frog.*;
 import com.banuh.frologue.game.item.EnergyDrink;
 import com.banuh.frologue.server.PlayerData;
@@ -166,7 +167,9 @@ public class PlayScene extends GameScene {
 
     @Override
     public void render() {
-
+        if (GlobalVariables.server.socket.isClosed()) {
+            System.out.println("Socket is closed!");
+        }
 
         if (overLap.isTop) {
             game.gc.setFill(new Color(1f, 0f, 0f, 0.5f));
@@ -206,12 +209,24 @@ public class PlayScene extends GameScene {
 
     @Override
     public void start() {
+        RoomServer server = GlobalVariables.server;
 //        game.showHitbox = true;
-        RoomServer server = new RoomServer();
         server.game = game;
-        server.connect();
 
-        new Thread(() -> server.receiveUpdates(playerList)).start();
+        // 총 5개의 랜덤 맵을 가져옴
+        Random random = new Random();
+        int[] levels = new int[5];
+
+        if (GlobalVariables.isHost) {
+            for (int i = 0; i < 5; i++) {
+                levels[i] = random.nextInt(4) + 1;
+            }
+            drawMap(levels);
+            server.sendMapInfo(levels);
+        }
+
+        new Thread(() -> server.receiveUpdates(this)).start();
+
         game.setInterval(() -> {
             server.sendPlayerPosition(frog);
         }, game.FRAME());
@@ -221,22 +236,8 @@ public class PlayScene extends GameScene {
         frog.pid = UUID.randomUUID().toString();
         game.addEntity(new EnergyDrink(200, 40, game));
 
-        TileMap firstMap = game.tileMapList.get("first_map");
-        game.placeTileMapByBottom("first_map", (game.width - firstMap.getWidth()) / 2f, 200);
-
         if (frog instanceof SpaceFrog) {
             GRAVITY = 1.63;
-        }
-
-        // 총 5개의 랜덤 맵을 가져옴
-        Random random = new Random();
-        int bottomY = firstMap.getHeight();
-
-        for (int i = 0; i < 5; i++) {
-            int level = random.nextInt(4) + 1;
-            TileMap map = game.tileMapList.get("level-" + level);
-            game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
-            bottomY += map.getHeight() + level * 15;
         }
 
         addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -274,5 +275,18 @@ public class PlayScene extends GameScene {
                 game.playSound("jump");
             }
         });
+    }
+
+    public void drawMap(int[] levels) {
+        TileMap firstMap = game.tileMapList.get("first_map");
+        game.placeTileMapByBottom("first_map", (game.width - firstMap.getWidth()) / 2f, 200);
+
+        int bottomY = firstMap.getHeight();
+
+        for (int level: levels) {
+            TileMap map = game.tileMapList.get("level-" + level);
+            game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
+            bottomY += map.getHeight() + level * 15;
+        }
     }
 }

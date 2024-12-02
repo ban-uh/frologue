@@ -1,5 +1,7 @@
 package com.banuh.frologue.game.scenes;
 
+import com.banuh.frologue.game.GlobalVariables;
+import com.banuh.frologue.server.RoomServer;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -26,9 +28,11 @@ public class StartPage extends Application {
     private boolean isHoveringStart = false; // 버튼 상호작용을 위해
     private boolean isHoveringExplanation = false;
     private boolean isHoveringExit = false;
+    private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("개구리다");
 
         int canvasWidth = 900;
@@ -215,6 +219,22 @@ public class StartPage extends Application {
                 true, false); // 비율 유지, 보간 비활성화
 
         ImageView confirmButton = new ImageView(confirmImage);
+        confirmButton.setOnMouseClicked(event -> {
+            String roomCode = numberField.getText();
+
+            GlobalVariables.server = new RoomServer();
+            GlobalVariables.isHost = false;
+            GlobalVariables.server.connect();
+            GlobalVariables.server.join(roomCode);
+
+            Stage currentStage = (Stage) canvas.getScene().getWindow();
+            waitingPage waitingPageScene = new waitingPage();
+            currentStage.close();
+            primaryStage.close();
+
+            Stage waitingStage = new Stage();
+            waitingPageScene.start(waitingStage);
+        });
 
         confirmButton.setFitWidth(145); // 원하는 폭
         confirmButton.setFitHeight(75); // 원하는 높이
@@ -240,6 +260,12 @@ public class StartPage extends Application {
             if (mouseX >= startAppImageX && mouseX <= startAppImageX + startAppImageWidth &&
                     mouseY >= startAppImageY && mouseY <= startAppImageY + startAppImageHeight) {
                 System.out.println("Waiting Page로 이동");
+
+                GlobalVariables.server = new RoomServer();
+                GlobalVariables.isHost = true;
+                GlobalVariables.server.connect();
+                GlobalVariables.server.create();
+
                 try {
                     // 현재 Stage 가져오기
                     Stage currentStage = (Stage) canvas.getScene().getWindow();
@@ -249,6 +275,7 @@ public class StartPage extends Application {
 
                     // StartPage 닫기
                     currentStage.close();
+                    primaryStage.close();
 
                     // waitingPage 실행
                     Stage waitingStage = new Stage(); // 새 Stage 생성
@@ -257,7 +284,6 @@ public class StartPage extends Application {
                     e.printStackTrace();
                 }
             }
-
         });
 
 
@@ -284,6 +310,4 @@ public class StartPage extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
-
 }
