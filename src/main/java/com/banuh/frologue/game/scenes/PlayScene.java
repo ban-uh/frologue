@@ -5,24 +5,26 @@ import com.banuh.frologue.core.entity.Entity;
 import com.banuh.frologue.core.scene.GameScene;
 import com.banuh.frologue.core.tilemap.OverLap;
 import com.banuh.frologue.core.tilemap.TileMap;
+import com.banuh.frologue.core.utils.Vector2D;
 import com.banuh.frologue.game.GlobalVariables;
 import com.banuh.frologue.game.frog.*;
 import com.banuh.frologue.game.item.EnergyDrink;
-import com.banuh.frologue.server.PlayerData;
+import com.banuh.frologue.game.item.GoldWorm;
+import com.banuh.frologue.game.item.Item;
 import com.banuh.frologue.server.RoomServer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class PlayScene extends GameScene {
     public double GRAVITY = 9.8;
     public final int TILE_SIZE = 16;
     public Frog frog;
+
+    public ArrayList<Item> droppedItems = new ArrayList<>();
 
     OverLap overLap;
     public HashMap<String, Frog> playerList = new HashMap<>();
@@ -33,6 +35,16 @@ public class PlayScene extends GameScene {
 
     @Override
     public void update() {
+        Iterator<Item> iterator = droppedItems.iterator();
+        while (iterator.hasNext()) {
+            Item item = iterator.next();
+            if (frog.isCollision(item)) {
+                item.use(frog);
+                entityList.remove(item);
+                iterator.remove();
+            }
+        }
+
 //        System.out.println("JUMP: " + frog.getState("jump"));
 //        System.out.println("MOVE: " + frog.getState("move"));
 //        System.out.println("FALL: " + frog.getState("fall"));
@@ -143,7 +155,11 @@ public class PlayScene extends GameScene {
 
         if (game.isPressed.spaceKey) {
             if (frog.jump_scale < 3) {
-                frog.jump_scale += 1.5f / game.getFps();
+                double val = 1.5f;
+//                if (frog.getFlag("energy_drink")) {
+//                    val = 15f;
+//                }
+                frog.jump_scale += val / game.getFps();
             } else {
                 frog.jump_scale = 3;
             }
@@ -171,22 +187,22 @@ public class PlayScene extends GameScene {
             System.out.println("Socket is closed!");
         }
 
-        if (overLap.isTop) {
-            game.gc.setFill(new Color(1f, 0f, 0f, 0.5f));
-            game.gc.fillRect((overLap.topTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.topTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isRight) {
-            game.gc.setFill(new Color(0f, 1f, 0f, 0.5f));
-            game.gc.fillRect((overLap.rightTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.rightTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isBottom) {
-            game.gc.setFill(new Color(0f, 0f, 1f, 0.5f));
-            game.gc.fillRect((overLap.bottomTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.bottomTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
-        if (overLap.isLeft) {
-            game.gc.setFill(new Color(0f, 0f, 0f, 0.5f));
-            game.gc.fillRect((overLap.leftTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.leftTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
-        }
+//        if (overLap.isTop) {
+//            game.gc.setFill(new Color(1f, 0f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.topTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.topTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isRight) {
+//            game.gc.setFill(new Color(0f, 1f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.rightTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.rightTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isBottom) {
+//            game.gc.setFill(new Color(0f, 0f, 1f, 0.5f));
+//            game.gc.fillRect((overLap.bottomTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.bottomTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
+//        if (overLap.isLeft) {
+//            game.gc.setFill(new Color(0f, 0f, 0f, 0.5f));
+//            game.gc.fillRect((overLap.leftTilePos.getX() - game.camera.pos.getX()) * game.camera.scale, (overLap.leftTilePos.getY() - game.camera.pos.getY()) * game.camera.scale, 48, 48);
+//        }
 
 //        if (tilepos != null) {
 //            // show hitboxes
@@ -232,9 +248,20 @@ public class PlayScene extends GameScene {
         }, game.FRAME());
         game.backgroundColor = Color.web("#6bc6ff");
 
-        frog = (Frog)game.addEntity(new NormalFrog(150, 50, game));
+        switch (GlobalVariables.frogType) {
+            case "normal": frog = new NormalFrog(150, 50, game); break;
+            case "ninja": frog = new NinjaFrog(150, 50, game); break;
+            case "ox": frog = new OxFrog(150, 50, game); break;
+            case "space": frog = new SpaceFrog(150, 50, game); break;
+            case "umbrella": frog = new UmbrellaFrog(150, 50, game); break;
+            case "witch": frog = new WitchFrog(150, 50, game); break;
+        }
+
+        game.addEntity(frog);
+
         frog.pid = UUID.randomUUID().toString();
-        game.addEntity(new EnergyDrink(200, 40, game));
+//        game.addEntity(new EnergyDrink(200, 40, game));
+        dropItem(new EnergyDrink(200, 50, game));
 
         if (frog instanceof SpaceFrog) {
             GRAVITY = 1.63;
@@ -288,5 +315,13 @@ public class PlayScene extends GameScene {
             game.placeTileMapByBottom("level-" + level, (game.width - map.getWidth()) / 2f, 175 - bottomY);
             bottomY += map.getHeight() + level * 15;
         }
+
+        Item item = new GoldWorm((game.width - 16) / 2f, - bottomY + 170, game);
+        dropItem(item);
+    }
+
+    public void dropItem(Item item) {
+        droppedItems.add(item);
+        game.addEntity(item);
     }
 }

@@ -86,7 +86,7 @@ public class waitingPage extends Application {
         Scene scene = new Scene(layout, width, height);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Waiting Page");
+        primaryStage.setTitle("Waiting Page (Code: " + GlobalVariables.server.roomCode + ")");
         primaryStage.show();
     }
 
@@ -114,6 +114,15 @@ public class waitingPage extends Application {
         // SelectEx 이미지 그리기
         Image selectExImage = new Image("file:src/main/resources/img/ui/charecter-select.png");
         modalGc.drawImage(selectExImage, 0, 0, modalWidth, modalHeight);
+
+        String[] frogTypes = {
+                "normal",
+                "ninja",
+                "ox",
+                "space",
+                "umbrella",
+                "witch"
+        };
 
         // 개구리 이미지 위치와 크기 정의
         double[][] frogData = {
@@ -162,12 +171,16 @@ public class waitingPage extends Application {
             frogBlock.setOnMouseExited(event -> frogBlock.setCursor(javafx.scene.Cursor.DEFAULT));
 
             // 클릭 이벤트 처리
+            int finalI = i;
+
             frogBlock.setOnMouseClicked(event -> {
                 double scaleFactor = 0.9;
                 selectedBlock.setLayoutX(x + (width * (1 - scaleFactor)) / 2); // 중앙 정렬
                 selectedBlock.setLayoutY(y + (height * (1 - scaleFactor)) / 2); // 중앙 정렬
                 selectedBlock.setPrefSize(width * scaleFactor, height * scaleFactor); // 크기 축소
                 selectedBlock.setVisible(true); // 블록 보이기
+
+                GlobalVariables.frogType = frogTypes[finalI];
             });
         }
 

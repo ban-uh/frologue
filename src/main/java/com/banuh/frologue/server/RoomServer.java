@@ -19,7 +19,7 @@ public class RoomServer {
     public Socket socket;
     private BufferedWriter writer;
     private BufferedReader reader;
-    private String roomCode;
+    public String roomCode;
     public Game game;
 
     public void join(String code) {
@@ -193,6 +193,17 @@ public class RoomServer {
         }
     }
 
+    public void sendImWin() {
+        try {
+            writer.write("game:win");
+            writer.newLine();
+            writer.flush();
+        } catch (Exception e) {
+            System.out.println("I'm win sending error: " + e.getMessage());
+            reconnectToServer();
+        }
+    }
+
     public void receiveUpdates(PlayScene scene) {
         HashMap<String, Frog> playerList = scene.playerList;
         try {
@@ -253,6 +264,8 @@ public class RoomServer {
                         intData[i] = Integer.parseInt(data[i]);
                     }
                     scene.drawMap(intData);
+                } else if (opcode.equals("win")) {
+                    JOptionPane.showMessageDialog(null, "상대방이 ☆황금 지렁이☆를 획득하여 당신이 '패배'하였습니다.");
                 }
             }
         } catch (Exception e) {
