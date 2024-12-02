@@ -231,10 +231,10 @@ public class PlayScene extends GameScene {
 
         // 총 5개의 랜덤 맵을 가져옴
         Random random = new Random();
-        int[] levels = new int[5];
+        int[] levels = new int[1];
 
         if (GlobalVariables.isHost) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 1; i++) {
                 levels[i] = random.nextInt(4) + 1;
             }
             drawMap(levels);
